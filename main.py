@@ -5,7 +5,8 @@ class PL:
     MAX = "MAX"
     MIN = "MIN"
     def __init__(self):
-        self.mode = PL.MAX
+
+        self.mode = self.ask_mode()
         self.vars = self.ask_Z()
         self.n = len(self.vars)
         self.A_ineq = self.ask_A()
@@ -13,7 +14,24 @@ class PL:
         self.B_ineq = self.ask_B()
 
 
+    def ask_mode(self):
+        print("What mode do you want to use ? MAX (0)\nMIN (1)")
+        while True:
+            k = input()
+            if k.upper() == "MAX":
+                return PL.MAX
+            if k.upper() == "MIN":
+                return PL.MIN
 
+            try:
+                n = int(k.strip())
+            except Exception:
+                continue
+
+            if n == 0:
+                return PL.MAX
+            if n == 1:
+                return PL.MIN
 
     def ask_Z(self):
         def print_vars(vars):
@@ -37,8 +55,7 @@ class PL:
             print_vars(vars)
         return vars
 
-    class MatrixNotFull(Exception):
-        pass
+
     def ask_A(self):
         def print_matrix(A):
             print("[",end="")
@@ -105,8 +122,14 @@ class PL:
         else:
             Z = self.vars
 
+        opt = linprog(c=Z, A_ub=self.A_ineq, b_ub=self.B_ineq, method="simplex")
 
-        return linprog(c=Z, A_ub=self.A_ineq, b_ub=self.B_ineq, method="simplex")["x"]
+        if self.mode == PL.MAX:
+            f = - opt["fun"]
+        else:
+            f = opt["fun"]
+
+        return {"x" : opt["x"], "Z":f}
 
 Pl = PL()
 print(Pl.solve_PL())
